@@ -1,0 +1,96 @@
+spring:
+  application:
+    name: hungpc-blog-backend
+
+  datasource:
+    url: ${SUPABASE_DB_URL}
+    username: ${SUPABASE_DB_USER}
+    password: ${SUPABASE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # Changed from 'update' - let Liquibase handle schema changes
+    show-sql: false # Disable Hibernate SQL logging (P6Spy will handle it)
+    properties:
+      hibernate:
+        format_sql: false # P6Spy handles formatting
+        use_sql_comments: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+
+# P6Spy configuration for SQL logging with actual parameters
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      multiline: false
+      logging: slf4j
+      log-format: "%(currentTime) | took %(executionTime)ms | %(category) | %(sql)"
+
+logging:
+  level:
+    p6spy: INFO # P6Spy logs - change to DEBUG for more details
+    org.hibernate.SQL: OFF # Turn off Hibernate SQL logging
+    org.hibernate.orm.jdbc.bind: OFF
+    org.hibernate.type.descriptor.sql.BasicBinder: OFF
+    com.p6spy: INFO # P6Spy framework logs
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %clr(%-5level) %cyan(%logger{15}) - %msg%n"
+
+supabase:
+  url: ${SUPABASE_URL}
+  anon-key: ${SUPABASE_ANON_KEY}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+
+git:
+  repo:
+    url: ${GIT_REPO_URL:https://github.com/HungPhan200591/NoteRepo.git}
+    branch: ${GIT_REPO_BRANCH:main}
+    local-path: ${GIT_REPO_LOCAL_PATH:${java.io.tmpdir}/noterepo}
+    content-path: ${GIT_REPO_CONTENT_PATH:content/}
+    token: ${GIT_TOKEN:} # GitHub Personal Access Token for private repo access
+
+# AI Provider Configuration
+# Switch between providers: gemini (default) | openai | claude
+ai:
+  provider: ${AI_PROVIDER:gemini} # Default to Gemini
+
+# Gemini API Configuration (Official Google GenAI SDK)
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: gemini-3-flash-preview
+  #  model: gemini-2.5-flash
+  enable-token-limit: ${GEMINI_ENABLE_TOKEN_LIMIT:false} # Set to true for testing with token limit
+  max-output-tokens: ${GEMINI_MAX_OUTPUT_TOKENS:5000} # Max tokens when limit is enabled
+
+# OpenAI API Configuration (GPT-4, GPT-3.5)
+openai:
+  api-key: ${OPENAI_API_KEY:}
+  model: ${OPENAI_MODEL:gpt-4} # gpt-4 | gpt-3.5-turbo
+  api-url: ${OPENAI_API_URL:https://api.openai.com/v1/chat/completions}
+
+# Antigravity Local Proxy (Gemini via local Gemini-compatible proxy)
+# Benefits: Unlimited rate limit, local development friendly
+# Uses Google GenAI SDK with custom endpoint
+antigravity:
+  proxy:
+    api-endpoint: ${ANTIGRAVITY_PROXY_API_ENDPOINT}
+    api-key: ${ANTIGRAVITY_PROXY_API_KEY}
+    model: ${ANTIGRAVITY_PROXY_MODEL:gemini-3-flash}
+    enable-token-limit: ${ANTIGRAVITY_PROXY_ENABLE_TOKEN_LIMIT:false}
+    max-output-tokens: ${ANTIGRAVITY_PROXY_MAX_OUTPUT_TOKENS:5000}
+
+# Pexels API Configuration (for cover images)
+pexels:
+  api-key: ${PEXELS_API_KEY}
+
+server:
+  port: ${SERVER_PORT}

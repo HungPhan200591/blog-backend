@@ -1,0 +1,188 @@
+databaseChangeLog:
+  # ============================================
+  # POSTS TABLE INDEXES
+  # ============================================
+
+  - changeSet:
+      id: 001-idx-posts-category-id
+      author: hungpc
+      comment: "Foreign key index for posts.category_id join"
+      changes:
+        - createIndex:
+            indexName: idx_posts_category_id
+            tableName: posts
+            columns:
+              - column:
+                  name: category_id
+      rollback:
+        - dropIndex:
+            indexName: idx_posts_category_id
+            tableName: posts
+
+  - changeSet:
+      id: 002-idx-posts-series-id
+      author: hungpc
+      comment: "Foreign key index for posts.series_id join"
+      changes:
+        - createIndex:
+            indexName: idx_posts_series_id
+            tableName: posts
+            columns:
+              - column:
+                  name: series_id
+      rollback:
+        - dropIndex:
+            indexName: idx_posts_series_id
+            tableName: posts
+
+  - changeSet:
+      id: 003-idx-posts-title-lower
+      author: hungpc
+      comment: "Case-insensitive search on post title"
+      changes:
+        - sql:
+            sql: CREATE INDEX IF NOT EXISTS idx_posts_title_lower ON posts (LOWER(title));
+      rollback:
+        - sql:
+            sql: DROP INDEX IF EXISTS idx_posts_title_lower;
+
+  - changeSet:
+      id: 004-idx-posts-slug-lower
+      author: hungpc
+      comment: "Case-insensitive search on post slug"
+      changes:
+        - sql:
+            sql: CREATE INDEX IF NOT EXISTS idx_posts_slug_lower ON posts (LOWER(slug));
+      rollback:
+        - sql:
+            sql: DROP INDEX IF EXISTS idx_posts_slug_lower;
+
+  - changeSet:
+      id: 005-idx-posts-is-published
+      author: hungpc
+      comment: "Filter published/draft posts"
+      changes:
+        - createIndex:
+            indexName: idx_posts_is_published
+            tableName: posts
+            columns:
+              - column:
+                  name: is_published
+      rollback:
+        - dropIndex:
+            indexName: idx_posts_is_published
+            tableName: posts
+
+  - changeSet:
+      id: 006-idx-posts-created-at-desc
+      author: hungpc
+      comment: "Sort posts by created_at descending"
+      changes:
+        - sql:
+            sql: CREATE INDEX IF NOT EXISTS idx_posts_created_at_desc ON posts (created_at DESC);
+      rollback:
+        - sql:
+            sql: DROP INDEX IF EXISTS idx_posts_created_at_desc;
+
+  # ============================================
+  # POST_TAGS TABLE INDEXES
+  # ============================================
+
+  - changeSet:
+      id: 008-idx-post-tags-composite
+      author: hungpc
+      comment: "Composite index for post_tags (post_id, tag_id)"
+      changes:
+        - createIndex:
+            indexName: idx_post_tags_post_tag
+            tableName: post_tags
+            columns:
+              - column:
+                  name: post_id
+              - column:
+                  name: tag_id
+      rollback:
+        - dropIndex:
+            indexName: idx_post_tags_post_tag
+            tableName: post_tags
+
+  - changeSet:
+      id: 009-idx-post-tags-tag-id
+      author: hungpc
+      comment: "Index for reverse lookup (tag -> posts)"
+      changes:
+        - createIndex:
+            indexName: idx_post_tags_tag_id
+            tableName: post_tags
+            columns:
+              - column:
+                  name: tag_id
+      rollback:
+        - dropIndex:
+            indexName: idx_post_tags_tag_id
+            tableName: post_tags
+
+  # ============================================
+  # CATEGORIES TABLE INDEXES
+  # ============================================
+
+  - changeSet:
+      id: 010-idx-categories-name-lower
+      author: hungpc
+      comment: "Case-insensitive search on category name"
+      changes:
+        - sql:
+            sql: CREATE INDEX IF NOT EXISTS idx_categories_name_lower ON categories (LOWER(name));
+      rollback:
+        - sql:
+            sql: DROP INDEX IF EXISTS idx_categories_name_lower;
+
+  # ============================================
+  # SERIES TABLE INDEXES
+  # ============================================
+
+  - changeSet:
+      id: 011-idx-series-title-lower
+      author: hungpc
+      comment: "Case-insensitive search on series title"
+      changes:
+        - sql:
+            sql: CREATE INDEX IF NOT EXISTS idx_series_title_lower ON series (LOWER(title));
+      rollback:
+        - sql:
+            sql: DROP INDEX IF EXISTS idx_series_title_lower;
+
+  # ============================================
+  # TAGS TABLE INDEXES
+  # ============================================
+
+  - changeSet:
+      id: 012-idx-tags-name-lower
+      author: hungpc
+      comment: "Case-insensitive search on tag name"
+      changes:
+        - sql:
+            sql: CREATE INDEX IF NOT EXISTS idx_tags_name_lower ON tags (LOWER(name));
+      rollback:
+        - sql:
+            sql: DROP INDEX IF EXISTS idx_tags_name_lower;
+
+  # ============================================
+  # ANALYZE TABLES
+  # ============================================
+
+  - changeSet:
+      id: 013-analyze-tables
+      author: hungpc
+      comment: "Update table statistics for query planner"
+      changes:
+        - sql:
+            sql: |
+              ANALYZE posts;
+              ANALYZE categories;
+              ANALYZE series;
+              ANALYZE tags;
+              ANALYZE post_tags;
+      rollback:
+        - sql:
+            sql: SELECT 1; -- No rollback needed for ANALYZE
